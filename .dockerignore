@@ -1,0 +1,35 @@
+# Git
+.git
+.gitignore
+
+# Build artifacts
+target/
+*.jar
+*.war
+
+# IDE files
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# Environment files
+.env
+*.env
+
+# Test files
+src/test/
