@@ -1,0 +1,21 @@
+# Build artifacts
+target/
+*.jar
+*.war
+
+# IDE files
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+nbproject/
+nb-configuration.xml
+
+# Docker
+*.log
+.DS_Store
+
+# Environment
+.env
+*.env
