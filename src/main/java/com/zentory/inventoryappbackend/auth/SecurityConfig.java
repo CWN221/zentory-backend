@@ -25,7 +25,7 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/api/auth/**").permitAll()
-            .requestMatchers("/api/sync/health").permitAll()
+            .requestMatchers("/api/sync/**").permitAll()
             .anyRequest().authenticated()
         )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
