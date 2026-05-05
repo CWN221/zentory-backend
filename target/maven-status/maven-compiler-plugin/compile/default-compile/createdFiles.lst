@@ -1,9 +1,3 @@
-com\zentory\inventoryappbackend\model\SyncQueue.class
-com\zentory\inventoryappbackend\controller\SyncController.class
-com\zentory\inventoryappbackend\repository\SalesLineItemRepository.class
-com\zentory\inventoryappbackend\repository\SalesInvoiceRepository.class
-com\zentory\inventoryappbackend\model\SalesInvoice.class
-com\zentory\inventoryappbackend\repository\UserAccountRepository.class
 com\zentory\inventoryappbackend\model\AuditLogEntry.class
 com\zentory\inventoryappbackend\model\SalesLineItem.class
 com\zentory\inventoryappbackend\repository\AuditLogRepository.class
@@ -15,7 +9,13 @@ com\zentory\inventoryappbackend\repository\SyncQueueRepository.class
 com\zentory\inventoryappbackend\model\Quotation.class
 com\zentory\inventoryappbackend\model\UserAccount.class
 com\zentory\inventoryappbackend\InventoryAppBackend.class
-com\zentory\inventoryappbackend\model\Category.class
 com\zentory\inventoryappbackend\model\QuotationItem.class
+com\zentory\inventoryappbackend\model\SyncQueue.class
+com\zentory\inventoryappbackend\controller\SyncController.class
+com\zentory\inventoryappbackend\repository\SalesLineItemRepository.class
+com\zentory\inventoryappbackend\repository\SalesInvoiceRepository.class
+com\zentory\inventoryappbackend\model\SalesInvoice.class
+com\zentory\inventoryappbackend\repository\UserAccountRepository.class
+com\zentory\inventoryappbackend\model\Category.class
 com\zentory\inventoryappbackend\repository\CategoryRepository.class
 com\zentory\inventoryappbackend\repository\QuotationRepository.class

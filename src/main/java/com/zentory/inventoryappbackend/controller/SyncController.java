@@ -2,6 +2,11 @@
 package com.zentory.inventoryappbackend.controller;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.zentory.inventoryappbackend.model.Category;
+import com.zentory.inventoryappbackend.model.Product;
+import com.zentory.inventoryappbackend.repository.CategoryRepository;
+import com.zentory.inventoryappbackend.repository.ProductRepository;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import org.slf4j.Logger;
@@ -14,6 +19,13 @@ public class SyncController {
     
     private static final Logger logger = LoggerFactory.getLogger(SyncController.class);
     private final Gson gson = new Gson(); 
+    private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    
+    public SyncController(ProductRepository productRepository, CategoryRepository categoryRepository) {
+        this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
+    }
     
     @GetMapping("/health")
     public Map<String, Object> health() {
@@ -42,9 +54,10 @@ public class SyncController {
                 String tableName = (String) op.get("tableName");
                 String operationType = (String) op.get("operationType");
                 String recordId = (String) op.get("recordId");
+                String jsonData = op.get("jsonData") != null ? String.valueOf(op.get("jsonData")) : null;
                 int localId = ((Number) op.get("id")).intValue();
                 
-                boolean success = processOperation(tableName, operationType, recordId);
+                boolean success = processOperation(tableName, operationType, recordId, jsonData);
                 
                 if (success) {
                     syncedIds.add(localId);
@@ -89,8 +102,76 @@ public class SyncController {
         return response;
     }
     
-    private boolean processOperation(String tableName, String operationType, String recordId) {
+    private boolean processOperation(String tableName, String operationType, String recordId, String jsonData) {
         logger.info("Processing: {} on {} ID: {}", operationType, tableName, recordId);
+
+        try {
+            if ("products".equalsIgnoreCase(tableName)) {
+                String op = operationType == null ? "" : operationType.toUpperCase();
+                if ("INSERT".equals(op) || "UPDATE".equals(op)) {
+                    if (jsonData == null) {
+                        logger.warn("No jsonData provided for product {}", recordId);
+                        return false;
+                    }
+                    JsonObject obj = gson.fromJson(jsonData, JsonObject.class);
+
+                    // Resolve or create category
+                    Category category = null;
+                    if (obj.has("categoryId") && !obj.get("categoryId").isJsonNull()) {
+                        try {
+                            long cid = obj.get("categoryId").getAsLong();
+                            category = categoryRepository.findById(cid).orElse(null);
+                        } catch (Exception ignored) {}
+                    }
+                    if (category == null && obj.has("categoryName") && !obj.get("categoryName").isJsonNull()) {
+                        String cname = obj.get("categoryName").getAsString();
+                        category = categoryRepository.findByName(cname);
+                        if (category == null) {
+                            category = new Category(cname);
+                            category = categoryRepository.save(category);
+                        }
+                    }
+
+                    Product product;
+                    try {
+                        Long id = Long.parseLong(recordId);
+                        product = productRepository.findById(id).orElse(new Product());
+                        product.setId(id);
+                    } catch (NumberFormatException e) {
+                        product = new Product();
+                    }
+
+                    if (obj.has("name") && !obj.get("name").isJsonNull()) product.setName(obj.get("name").getAsString());
+                    if (category != null) product.setCategory(category);
+                    if (obj.has("quantity") && !obj.get("quantity").isJsonNull()) product.setQuantity(obj.get("quantity").getAsInt());
+                    if (obj.has("price") && !obj.get("price").isJsonNull()) product.setPrice(obj.get("price").getAsDouble());
+                    if (obj.has("is_active") && !obj.get("is_active").isJsonNull()) product.setIsActive(obj.get("is_active").getAsInt() != 0);
+
+                    productRepository.save(product);
+                    return true;
+
+                } else if ("DELETE".equals(op)) {
+                    try {
+                        Long id = Long.parseLong(recordId);
+                        Optional<Product> p = productRepository.findById(id);
+                        if (p.isPresent()) {
+                            Product prod = p.get();
+                            prod.setIsActive(false);
+                            productRepository.save(prod);
+                        }
+                        return true;
+                    } catch (Exception e) {
+                        logger.error("Failed to delete product: {}", recordId, e);
+                        return false;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error processing operation", e);
+            return false;
+        }
+
+        // Unknown table - ignore but report success to avoid retries
         return true;
     }
 }
